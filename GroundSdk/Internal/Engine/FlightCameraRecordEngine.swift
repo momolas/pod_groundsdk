@@ -692,8 +692,9 @@ class FlightCameraRecordEngine: EngineBaseCore {
             var imageSize: CGSize?
             if let imageSource = CGImageSourceCreateWithData(data! as CFData, nil) {
                 if let imageProperties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as Dictionary? {
-                    imageSize = CGSize(width: imageProperties[kCGImagePropertyPixelWidth] as! Int,
-                                       height: imageProperties[kCGImagePropertyPixelHeight] as! Int)
+                    let width = (imageProperties[kCGImagePropertyPixelWidth] as? NSNumber)?.intValue ?? 0
+                    let height = (imageProperties[kCGImagePropertyPixelHeight] as? NSNumber)?.intValue ?? 0
+                    imageSize = CGSize(width: width, height: height)
                 }
             }
             if let imageSize = imageSize {
