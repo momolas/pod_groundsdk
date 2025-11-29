@@ -29,41 +29,39 @@
 
 import Foundation
 
-//// Core implementation of the SecurityModeSetting protocol
+/// Core implementation of the SecurityModeSetting protocol.
 class SecurityModeSettingCore: SecurityModeSetting {
 
-    /// Values of this setting that can be sent to the backend
-    enum SettingValue {
-        /// disable security
-        case open
-        /// wpa 2 with a password
-        case wpa2(password: String)
-    }
+    var updating: Bool { return timeout.isScheduled }
 
-    /// Delegate called when the setting value is changed by setting `value` property
-    private unowned let didChangeDelegate: SettingChangeDelegate
+    private(set) var supportedModes: Set<SecurityMode> = []
+
+    private(set) var modes: Set<SecurityMode> = [.open]
+
+    var mode: SecurityMode {
+        if let mode = modes.first {
+            return mode
+        }
+        return .open
+    }
 
     /// Timeout object.
     ///
-    /// Visibility is internal for testing purposes
+    /// Visibility is internal for testing purposes.
     let timeout = SettingTimeout()
 
-    /// Tells if the setting value has been changed and is waiting for change confirmation
-    var updating: Bool { return timeout.isScheduled }
+    /// Delegate called when the setting value is changed by setting `modes` property.
+    private unowned let didChangeDelegate: SettingChangeDelegate
 
-    private(set) var mode = SecurityMode.open
+    /// Closure to call to change the value.
+    private let backend: (Set<SecurityMode>, String?) -> Bool
 
-    private(set) var supportedModes = Set<SecurityMode>()
-
-    /// Closure to call to change the value
-    private let backend: (SettingValue) -> Bool
-
-    /// Constructor
+    /// Constructor.
     ///
     /// - Parameters:
     ///   - didChangeDelegate: delegate called when the setting value is changed by setting `value` property
     ///   - backend: closure to call to change the setting value
-    init(didChangeDelegate: SettingChangeDelegate, backend: @escaping (SettingValue) -> Bool) {
+    init(didChangeDelegate: SettingChangeDelegate, backend: @escaping (Set<SecurityMode>, String?) -> Bool) {
         self.didChangeDelegate = didChangeDelegate
         self.backend = backend
     }
@@ -73,11 +71,11 @@ class SecurityModeSettingCore: SecurityModeSetting {
             return
         }
         if mode != .open {
-            if backend(.open) {
-                let oldMode = mode
-                mode = .open
+            if backend([.open], nil) {
+                let oldModes = modes
+                modes = [.open]
                 timeout.schedule { [weak self] in
-                    if let `self` = self, self.update(mode: oldMode) {
+                    if let `self` = self, self.update(modes: oldModes) {
                         self.didChangeDelegate.userDidChangeSetting()
                     }
                 }
@@ -87,45 +85,50 @@ class SecurityModeSettingCore: SecurityModeSetting {
     }
 
     func secureWithWpa2(password: String) -> Bool {
-        guard WifiPasswordUtil.isValid(password) else {
+        return secure(with: [.wpa2Secured], password: password)
+    }
+
+    func secure(with modes: Set<SecurityMode>, password: String) -> Bool {
+        let effectiveModes = modes.filter { $0 != .open && supportedModes.contains($0) }
+        guard !effectiveModes.isEmpty,
+              WifiPasswordUtil.isValid(password) else {
             return false
         }
-        guard supportedModes.contains(.wpa2Secured) else {
-            return true
-        }
-        if backend(.wpa2(password: password)) {
-            let oldMode = mode
-            mode = .wpa2Secured
+
+        if backend(effectiveModes, password) {
+            let oldModes = self.modes
+            self.modes = effectiveModes
             timeout.schedule { [weak self] in
-                if let `self` = self, self.update(mode: oldMode) {
+                if let `self` = self, self.update(modes: oldModes) {
                     self.didChangeDelegate.userDidChangeSetting()
                 }
             }
             didChangeDelegate.userDidChangeSetting()
-        }
-        return true
-    }
-
-    /// Called by the backend, change the setting data
-    ///
-    /// - Parameter value:  the new security mode
-    /// - Returns: true if the setting has been changed, false otherwise
-    func update(mode newValue: SecurityMode) -> Bool {
-        if updating || mode != newValue {
-            mode = newValue
-            timeout.cancel()
             return true
         }
         return false
     }
 
-    /// Called by the backend, sets supported modes
+    /// Updates supported modes.
     ///
-    /// - Parameter supportedModes: new set of security mode
-    /// - Returns: true if the set has been changed, false otherwise
-    func update(supportedModes newSupportedModes: Set<SecurityMode>) -> Bool {
-        if supportedModes != newSupportedModes {
-            supportedModes = newSupportedModes
+    /// - Parameter newValue: new supported modes
+    /// - Returns: `true` if supported modes have changed, `false` otherwise
+    func update(supportedModes newValue: Set<SecurityMode>) -> Bool {
+        if supportedModes != newValue {
+            supportedModes = newValue
+            return true
+        }
+        return false
+    }
+
+    /// Updates active modes.
+    ///
+    /// - Parameter newValue: new active modes
+    /// - Returns: `true` if the setting has been changed, `false` otherwise
+    func update(modes newValue: Set<SecurityMode>) -> Bool {
+        if updating || modes != newValue {
+            modes = newValue
+            timeout.cancel()
             return true
         }
         return false
@@ -139,12 +142,5 @@ class SecurityModeSettingCore: SecurityModeSetting {
             timeout.cancel()
             completionClosure()
         }
-    }
-}
-
-/// Extension of SecurityModeSettingCore to conform to the ObjC GSSecurityModeSetting protocol
-extension SecurityModeSettingCore: GSSecurityModeSetting {
-    func isModeSupported(_ mode: SecurityMode) -> Bool {
-        return supportedModes.contains(mode)
     }
 }

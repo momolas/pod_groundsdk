@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Parrot Drones SAS
+// Copyright (C) 2022 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -28,3 +28,26 @@
 //    SUCH DAMAGE.
 
 import Foundation
+
+/// Raw video sink backend
+public protocol RawVideoSinkBackend: SinkBackend {
+
+}
+
+/// Internal `RawVideoSink` implementation.
+public class RawVideoSinkCore: SinkCore, RawVideoSink {
+
+    /// Sink configuration.
+    private let config: RawVideoSinkConfig
+
+    /// Constructor
+    ///
+    /// - Parameters:
+    ///    - config: configuration
+    ///    - backend: sink backend
+    public init(config: RawVideoSinkConfig, backend: SinkBackend) {
+        self.config = config
+        super.init()
+        self.backend = backend
+    }
+}

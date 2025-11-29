@@ -63,6 +63,9 @@ public class OffScreenStreamRender {
         }
     }
 
+    /// Render scheduler timer
+    private var renderTimer: Timer?
+
     /// Closure called at each frame
     public var frameReadyAction: (() -> Void)?
 
@@ -257,11 +260,7 @@ public class OffScreenStreamRender {
             return
         }
 
-        if let sink = self.sink {
-            sink.close()
-            self.sink = nil
-        }
-
+        sink = nil
         self.stream = stream
 
         if let stream = self.stream {
@@ -304,7 +303,14 @@ extension OffScreenStreamRender: GlRenderSinkListener {
     }
 
     public func onFrameReady(renderer: GlRenderSink) {
-        renderVideoFrame()
+    }
+
+    public func onPreferredFpsChanged(renderer: GlRenderSink, fps: Float) {
+        // update render scheduler
+        renderTimer?.invalidate()
+        renderTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / Double(fps), repeats: true, block: { [weak self]_ in
+            self?.renderVideoFrame()
+        })
     }
 
     public func onContentZoneChange(contentZone: CGRect) {

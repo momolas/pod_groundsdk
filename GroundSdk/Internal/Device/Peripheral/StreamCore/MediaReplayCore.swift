@@ -32,29 +32,18 @@ import Foundation
 /// Core class for MediaReplay.
 public class MediaReplayCore: ReplayCore, MediaReplay {
 
-    /// Stream server managing the stream.
-    private unowned let server: StreamServerCore
-
-    /// Played back media resource.
+    /// Played back media source.
     public var source: MediaReplaySource
 
     /// Constructor
     ///
     /// - Parameters:
-    ///    - server: stream server
-    ///    - resource: media source to be played back
-    public init(server: StreamServerCore, source: MediaSourceCore) {
-        self.server = server
+    ///    - source: media source to be played back
+    ///    - backend: video stream backend
+    public init(source: MediaSourceCore, backend: StreamCoreBackend) {
         self.source = source
 
         super.init()
-
-        backend = server.getStreamBackendMedia(url: source.streamUrl, trackName: source.streamTrackName,
-                                               streamCore: self)
-        self.server.register(stream: self)
-    }
-
-    override func onRelease() {
-        server.unregister(stream: self)
+        self.backend = backend
     }
 }

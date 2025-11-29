@@ -205,6 +205,12 @@ public class Alarm: NSObject {
         /// Battery is too cold, so forced landing auto trigger is planned.
         case automaticLandingBatteryTooCold
 
+        /// DRI is not functional.
+        case driFailing
+
+        /// Video signal processing is not functional.
+        case videoPipeline
+
         /// Debug description.
         public var description: String {
             switch self {
@@ -250,6 +256,8 @@ public class Alarm: NSObject {
             case .automaticLandingPropellerIcingIssue:           return "automaticLandingPropellerIcingIssue"
             case .automaticLandingBatteryTooHot:                 return "automaticLandingBatteryTooHot"
             case .automaticLandingBatteryTooCold:                return "automaticLandingBatteryTooCold"
+            case .driFailing:                                    return "driFailing"
+            case .videoPipeline:                                 return "videoPipeline"
             }
         }
 
@@ -269,7 +277,7 @@ public class Alarm: NSObject {
             .obstacleAvoidanceBlindMotionDirection, .inclinationTooHigh, .horizontalGeofenceReached,
             .verticalGeofenceReached, .obstacleAvoidanceFreeze, .freeFallDetected,
             .stereoCameraDecalibrated, .automaticLandingPropellerIcingIssue, .automaticLandingBatteryTooHot,
-            .automaticLandingBatteryTooCold]
+            .automaticLandingBatteryTooCold, .driFailing, .videoPipeline]
     }
 
     /// Alarm level.

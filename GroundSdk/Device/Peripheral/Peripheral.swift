@@ -52,6 +52,8 @@ public class Peripherals: NSObject {
     public static let beeper = BeeperDesc()
     /// Blended thermal camera peripheral.
     public static let blendedThermalCamera = BlendedThermalCameraDesc()
+    /// Blended thermal camera2 peripheral.
+    public static let blendedThermalCamera2 = BlendedThermalCamera2Desc()
     /// Cellular.
     public static let cellular = CellularDesc()
     /// Certificate Uploader.
@@ -84,8 +86,12 @@ public class Peripherals: NSObject {
     public static let geofence = GeofenceDesc()
     /// Gimbal.
     public static let gimbal = GimbalDesc()
+    /// HTTP server.
+    public static let httpServer = HttpServerDesc()
     /// Internal user storage.
     public static let internalUserStorage = InternalUserStorageDesc()
+    /// Kill switch.
+    public static let killSwitch = KillSwitchDesc()
     /// Leds.
     public static let leds = LedsDesc()
     /// Log control.
@@ -102,6 +108,8 @@ public class Peripherals: NSObject {
     public static let mainCamera2 = MainCamera2Desc()
     /// Media store peripheral.
     public static let mediaStore = MediaStoreDesc()
+    /// Messenger peripheral.
+    public static let messenger = MessengerDesc()
     /// Microhard.
     public static let microhard = MicrohardDesc()
     /// Missions.
@@ -128,6 +136,8 @@ public class Peripherals: NSObject {
     public static let skyCtrl3Gamepad = SkyCtrl3GamepadDesc()
     /// SkyController4 gamepad peripheral.
     public static let skyCtrl4Gamepad = SkyCtrl4GamepadDesc()
+    /// Sleep mode peripheral.
+    public static let sleepMode = SleepModeDesc()
     /// Stereo vision sensor.
     public static let stereoVisionSensor = StereoVisionSensorDesc()
     /// Video stream peripheral.
@@ -148,10 +158,14 @@ public class Peripherals: NSObject {
     public static let wifiAccessPoint = WifiAccessPointDesc()
     /// Wifi scanner peripheral.
     public static let wifiScanner = WifiScannerDesc()
+    /// Wifi station peripheral.
+    public static let wifiStation = WifiStationDesc()
 
-    // Internal peripherals.
+    // Peripherals reserved for internal use.
     /// Latest flight log (FDR) downloader.
     internal static let latestLogDownloader = LatestLogDownloaderDesc()
+    /// Terrain control peripheral.
+    public static let terrainControl = TerrainControlDesc()
 }
 
 /// Peripheral uid.
@@ -160,6 +174,7 @@ enum PeripheralUid: Int {
     case batteryGaugeUpdater
     case beeper
     case blendedThermalCamera
+    case blendedThermalCamera2
     case cellular
     case certificateUploader
     case copilot
@@ -176,7 +191,9 @@ enum PeripheralUid: Int {
     case frontStereoGimbal
     case geofence
     case gimbal
+    case httpServer
     case internalUserStorage
+    case killSwitch
     case latestLogDownloader
     case leds
     case logControl
@@ -186,6 +203,7 @@ enum PeripheralUid: Int {
     case mainCamera
     case mainCamera2
     case mediaStore
+    case messenger
     case microhard
     case missionManager
     case missionUpdater
@@ -199,16 +217,19 @@ enum PeripheralUid: Int {
     case secureElement
     case skyCtrl3Gamepad
     case skyCtrl4Gamepad
+    case sleepMode
     case stereoVisionSensor
     case streamServer
     case systemInfo
     case targetTracker
+    case terrainControl
     case thermalCamera
     case thermalControl
     case updater
     case virtualGamepad
     case wifiAccessPoint
     case wifiScanner
+    case wifiStation
 }
 
 /// Objective-C wrapper of Ref<Peripheral>. Required because swift generics can't be used from Objective-C.

@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Parrot Drones SAS
+// Copyright (C) 2021 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,24 +29,23 @@
 
 import Foundation
 
-/// YUV sink listener.
-@objc(GSYuvSinkListener)
-public protocol YuvSinkListener {
+/// FileReplay backend provider utility.
+public protocol FileReplayProvider: AnyObject, UtilityCore {
 
-    /// Called when a frame is available.
+    /// Creates a new `FileReplayCore` instance to stream the given local file replay source.
     ///
-    /// - Parameters:
-    ///   - sink: YUV sink
-    ///   - frame: new frame available
-    func frameReady(sink: StreamSink, frame: SdkCoreFrame)
+    /// - Parameter source: file replay source to stream
+    /// - Returns the new `FileReplayCore`
+    func newFileReplay(source: FileReplaySource) -> FileReplayCore
 
-    /// Called when the stream sink has started.
+    /// Releases the given file replay stream.
     ///
-    /// - Parameter sink: YUV sink
-    func didStart(sink: StreamSink)
+    /// - Parameter stream: file replay stream to release
+    func releaseFileReplay(stream: FileReplayCore)
+}
 
-    /// Called when the stream sink has stopped.
-    ///
-    /// - Parameter sink: YUV sink
-    func didStop(sink: StreamSink)
+/// FileReplay backend provider utility description.
+public class FileReplayProviderCoreDesc: NSObject, UtilityCoreApiDescriptor {
+    public typealias ApiProtocol = FileReplayProvider
+    public let uid = UtilityUid.fileReplayProvider.rawValue
 }

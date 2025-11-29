@@ -200,6 +200,9 @@ open class StreamView: GLKView {
         }
     }
 
+    /// Render scheduler timer
+    private var renderTimer: Timer?
+
     /// Constructor.
     ///
     /// - Parameter frame: view frame
@@ -216,7 +219,7 @@ open class StreamView: GLKView {
     /// Initializes OpenGL context.
     private func contextInit() {
         context = EAGLContext(api: EAGLRenderingAPI.openGLES3)!
-        enableSetNeedsDisplay = true
+        enableSetNeedsDisplay = false
     }
 
     /// Draws a frame.
@@ -325,13 +328,9 @@ open class StreamView: GLKView {
             return
         }
 
-        if let sink = self.sink {
-            sink.close()
-            self.sink = nil
-        }
+        sink = nil
 
         self.stream = stream
-
         if let stream = self.stream {
             sink = stream.openSink(config: GlRenderSinkCore.config(listener: self))
         }
@@ -360,7 +359,14 @@ extension StreamView: GlRenderSinkListener {
     }
 
     public func onFrameReady(renderer: GlRenderSink) {
-        setNeedsDisplay()
+    }
+
+    public func onPreferredFpsChanged(renderer: GlRenderSink, fps: Float) {
+        // update display scheduler
+        renderTimer?.invalidate()
+        renderTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / Double(fps), repeats: true, block: { [weak self]_ in
+            self?.display()
+        })
     }
 
     public func onContentZoneChange(contentZone: CGRect) {

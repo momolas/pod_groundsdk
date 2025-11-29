@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Parrot Drones SAS
+// Copyright (C) 2022 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -29,20 +29,23 @@
 
 import Foundation
 
-/// FileReplay backend provider utility.
-public protocol FileReplayBackendProvider: UtilityCore {
-    /// Retrieves FileReplay stream backend.
-    ///
-    /// - Parameters:
-    ///    - url: url of the media to stream
-    ///    - trackName: track name to stream
-    ///    - stream: stream owner of the backend
-    /// - Returns: a new FileReplay stream backend
-    func getStreamBackend(url: URL, trackName: String, stream: StreamCore) -> StreamBackend
+/// An identifiable cancelable core
+public protocol IdentifiableCancelableCore: CancelableCore {
+    /// The identifier.
+    var id: String { get }
 }
 
-/// FileReplay backend provider utility description.
-public class FileReplayBackendProviderCoreDesc: NSObject, UtilityCoreApiDescriptor {
-    public typealias ApiProtocol = FileReplayBackendProvider
-    public let uid = UtilityUid.fileReplayBackendProvider.rawValue
+/// A task of multiple request that can be canceled
+public class IdentifiableCancelableTaskCore: CancelableTaskCore, IdentifiableCancelableCore {
+    public let id: String
+
+    /// Constructor
+    ///
+    /// - Parameters:
+    ///   - id: the identifier of the cancelable
+    ///   - request: the encapsulated cancelable request
+    public init(id: String, request: CancelableCore?) {
+        self.id = id
+        super.init(request: request)
+    }
 }

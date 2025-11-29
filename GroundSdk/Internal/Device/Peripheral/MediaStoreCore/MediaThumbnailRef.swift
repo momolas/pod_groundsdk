@@ -31,10 +31,10 @@ import Foundation
 import UIKit
 
 /// Implementation of a reference a thumbnail UIImage
-class MediaThumbnailRefCore: Ref<UIImage> {
+class MediaThumbnailRefCore: Ref<UIImage>, MediaOperationRef {
 
     /// Active cache download request
-    private var thumbnailRequest: MediaStoreThumbnailCacheCore.ThumbnailRequest?
+    private(set) var request: CancelableCore?
 
     /// Constructor
     ///
@@ -45,14 +45,21 @@ class MediaThumbnailRefCore: Ref<UIImage> {
     init(thumbnailCache: MediaStoreThumbnailCacheCore, owner: MediaStoreThumbnailCacheCore.ThumbnailOwner,
          observer: @escaping Observer) {
         super.init(observer: observer)
-        thumbnailRequest = thumbnailCache.getThumbnail(for: owner) { [unowned self] image in
+        request = thumbnailCache.getThumbnail(for: owner) { [weak self] image in
+            guard let self = self else { return }
             self.update(newValue: image)
-            self.thumbnailRequest = nil
+            self.request = nil
         }
+    }
+
+    /// Cancels the request
+    func cancel() {
+        request?.cancel()
+        request = nil
     }
 
     /// Destructor
     deinit {
-        thumbnailRequest?.cancel()
+        cancel()
     }
 }
